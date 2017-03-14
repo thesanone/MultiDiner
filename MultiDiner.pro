@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,7 +12,7 @@ TARGET = MultiDiner
 TEMPLATE = app
 
 CONFIG -= debug_and_release debug_and_release_target
-CONFIG += c++11
+#CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -33,6 +33,7 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
     edge.h \
     multigraph.h \
-    mgexception.h
+    mgexception.h \
+    wheelevent_forqsceneview.h
 
 FORMS    += mainwindow.ui

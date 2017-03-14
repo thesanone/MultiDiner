@@ -6,13 +6,13 @@
 
 namespace mg
 {
-    class Exception : public std::exception
-    {
-    public:
-        Exception();
-        Exception(std::string text);
+  class Exception : public std::exception
+  {
+  public:
+    Exception();
+    Exception(std::string text);
 
-        std::string text;
-    };
+    std::string text;
+  };
 } // end of mg namespace
 #endif // MGEXCEPTION_H
