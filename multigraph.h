@@ -19,7 +19,13 @@ namespace mg
 
     void addVertex(V value);
     void addEdge(V src, V dst, E value);
-    void generateDotText(std::__cxx11::string name);
+
+    void deleteVertex(V value);
+
+    void generateDotText(std::string name);
+    //void readFromDotFile(std::string name);
+
+    std::vector<V> getVertexes() const;
 
   private:
     std::vector<Edge<V, E>> edges;
@@ -59,7 +65,29 @@ namespace mg
     edges.push_back(Edge<V, E>(src, dst, value));
   }
 
-  template<typename V, typename E>
+  template<typename V, typename E> inline
+  void Multigraph<V, E>::deleteVertex(V value)
+  {
+    auto pos = std::find(vertexes.begin(), vertexes.end(), value);
+
+    if(pos == vertexes.end())
+    {
+      throw Exception("Element doesn't exist!");
+      return;
+    }
+
+    vertexes.erase(pos);
+
+    typename std::vector<Edge<V, E>>::iterator sec_pos =
+        std::remove_if(edges.begin(), edges.end(), [value] (Edge<V, E> i)
+        {
+            return (i.getSource() == value || i.getDestenation() == value);
+        });
+
+    edges.erase(sec_pos, edges.end());
+  }
+
+  template<typename V, typename E> inline
   void Multigraph<V, E>::generateDotText(std::string name)
   {
     std::ofstream outputFile;
@@ -81,6 +109,12 @@ namespace mg
     });
     outputFile << "\n}";
     outputFile.close();
+  }
+
+  template<typename V, typename E> inline
+  std::vector<V> Multigraph<V, E>::getVertexes() const
+  {
+    return vertexes;
   }
 
 } // end of namespace

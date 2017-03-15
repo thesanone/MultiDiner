@@ -34,6 +34,7 @@ HEADERS  += mainwindow.h \
     edge.h \
     multigraph.h \
     mgexception.h \
-    wheelevent_forqsceneview.h
+    wheelevent_forqsceneview.h \
+    mathparser.h
 
 FORMS    += mainwindow.ui

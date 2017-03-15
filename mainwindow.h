@@ -3,6 +3,7 @@
 
 #include "wheelevent_forqsceneview.h"
 #include "multigraph.h"
+#include "mathparser.h"
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -21,11 +22,25 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+private slots:
+  void addPerson();
+  void addDebt();
+  void deletePerson();
+
+  /// обновление списка вершин графа в комбо боксах панели контроли
+  void updatePersonsList();
+
+  /// обновление отображаемого графа
+  void updateGraph();
+
 private:
   Ui::MainWindow *ui;
 
   // Main container
   mg::Multigraph<std::string, double> graph;
+
+  /// Парсер математических выражений
+  MathParser mathParser;
 
   // GUI elements
   WheelEvent_forQSceneView *view;
