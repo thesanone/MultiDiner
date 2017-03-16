@@ -20,8 +20,9 @@ namespace mg
     void addVertex(V value);
     void addEdge(V src, V dst, E value);
 
-    void deleteVertex(V value);
+    void clear();
 
+    void deleteVertex(V value);
     bool vertexIsIsolated(V value);
 
     void generateDotText(std::string name);
@@ -30,9 +31,61 @@ namespace mg
     std::vector<V> getVertexes() const;
 
   private:
+    template <typename V2, typename E2>
+    friend std::ostream& operator<< (std::ostream& os, const Multigraph<V2, E2>& dt);
+
+    template <typename V2, typename E2>
+    friend std::istream& operator>> (std::istream& is, Multigraph<V2, E2>& dt);
+
+  protected:
     std::vector<Edge<V, E>> edges;
     std::vector<V> vertexes;
   };
+
+  template <typename V, typename E>
+  std::ostream& operator<< (std::ostream& os, const Multigraph<V, E>& dt)
+  {
+    os << dt.vertexes.size();
+    std::for_each(dt.vertexes.begin(), dt.vertexes.end(), [&os](V i){ os << i << "\n"; });
+
+    os << dt.edges.size();
+    std::for_each(dt.edges.begin(), dt.edges.end(), [&os](Edge<V, E> i)
+    {
+      os << i.getSource() << "\n"
+         << i.getDestenation() << "\n"
+         << i.getValue();
+    });
+
+    return os;
+  }
+
+  template <typename V, typename E>
+  std::istream& operator>> ( std::istream& is, Multigraph<V, E>& dt )
+  {
+     size_t vertexesSize, edgesSize;
+
+     is >> vertexesSize;
+
+     V obj;
+     for(size_t i = 0; i != vertexesSize; i++)
+     {
+       is >> obj;
+       dt.vertexes.push_back(obj);
+     }
+
+     is >> edgesSize;
+     V obj2;
+     E valueObj;
+     for(size_t i = 0; i != edgesSize; i++)
+     {
+       is >> obj
+          >> obj2
+          >> valueObj;
+       dt.edges.push_back(Edge<V, E>(obj, obj2, valueObj));
+     }
+
+     return is;
+  }
 
   template<typename V, typename E> inline
   void Multigraph<V, E>::addVertex(V value)
@@ -68,6 +121,13 @@ namespace mg
     }
 
     edges.push_back(Edge<V, E>(src, dst, value));
+  }
+
+  template<typename V, typename E> inline
+  void Multigraph<V, E>::clear()
+  {
+    vertexes.clear();
+    edges.clear();
   }
 
   template<typename V, typename E> inline

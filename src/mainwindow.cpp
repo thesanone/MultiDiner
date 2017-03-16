@@ -5,6 +5,7 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -45,6 +46,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   //actions
   connect(ui->actionShow_controll_panel, SIGNAL(triggered(bool)), this, SLOT(actionShowControllPanel()));
+  connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(actionSaveGraph()));
+  connect(ui->actionLoad_graph, SIGNAL(triggered(bool)), this, SLOT(actionLoadGraph()));
+  connect(ui->actionReduce_edges, SIGNAL(triggered(bool)), this, SLOT(actionReduseEdges()));
 
   updatePersonsList();
 }
@@ -152,4 +156,39 @@ void MainWindow::updateGraph()
 void MainWindow::actionShowControllPanel()
 {
   ui->dockWidget_controll->show();
+}
+
+void MainWindow::actionSaveGraph()
+{
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save file"), "",
+          tr("(*.mg)"));
+
+  if (!fileName.isEmpty())
+  {
+    std::ofstream outputFile;
+    outputFile.open(fileName.toLocal8Bit().constData());
+    outputFile << graph;
+    outputFile.close();
+  }
+}
+
+void MainWindow::actionLoadGraph()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+             tr("*.mg"));
+
+  if (!fileName.isEmpty())
+  {
+    std::ifstream inputFile;
+    inputFile.open(fileName.toLocal8Bit().constData());
+    graph.clear();
+    inputFile >> graph;
+    inputFile.close();
+    updateGraph();
+  }
+}
+
+void MainWindow::actionReduseEdges()
+{
+
 }

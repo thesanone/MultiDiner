@@ -35,6 +35,9 @@ private slots:
 
   // actions
   void actionShowControllPanel();
+  void actionSaveGraph();
+  void actionLoadGraph();
+  void actionReduseEdges();
 
 private:
   Ui::MainWindow *ui;
