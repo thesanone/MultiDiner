@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "../ThirdParty/tinyexpr-master/tinyexpr.h"
 #include <algorithm>
 
 #include <QDebug>
@@ -62,7 +63,9 @@ void MainWindow::addPerson()
 {
   try
   {
-    graph.addVertex(ui->lineEdit_person->text().toLocal8Bit().constData());
+    QString text = ui->lineEdit_person->text();
+    text.replace(" ", "_");
+    graph.addVertex(text.toLocal8Bit().constData());
     updatePersonsList();
   }
   catch (mg::Exception e)
@@ -75,10 +78,17 @@ void MainWindow::addDebt()
 {
   try
   {
+    int error = 0;
+    double value = te_interp(ui->lineEdit_debt->text().toLocal8Bit().constData(), &error);
+    if (error != 0 )
+    {
+      QMessageBox::critical(this,"Error!", "'"+ui->lineEdit_debt->text()+"' parse error!", QMessageBox::Ok);
+      return;
+    }
     graph.addEdge(
           ui->comboBox_creditor->currentText().toLocal8Bit().constData(),
           ui->comboBox_debtor->currentText().toLocal8Bit().constData(),
-          mathParser.Calc(ui->lineEdit_debt->text().toLocal8Bit().constData()));
+          value);
   }
   catch (mg::Exception e)
   {

@@ -28,13 +28,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    mgexception.cpp
+    mgexception.cpp \
+    ../ThirdParty/tinyexpr-master/tinyexpr.c
 
 HEADERS  += mainwindow.h \
     edge.h \
     multigraph.h \
     mgexception.h \
     wheelevent_forqsceneview.h \
-    mathparser.h
+    mathparser.h \
+    ../ThirdParty/tinyexpr-master/tinyexpr.h
 
 FORMS    += mainwindow.ui

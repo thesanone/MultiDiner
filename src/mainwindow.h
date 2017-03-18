@@ -46,7 +46,7 @@ private:
   mg::Multigraph<std::string, double> graph;
 
   /// Парсер математических выражений
-  MathParser mathParser;
+  //MathParser mathParser;
 
   // GUI elements
   WheelEvent_forQSceneView *view;

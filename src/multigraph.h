@@ -30,6 +30,14 @@ namespace mg
 
     std::vector<V> getVertexes() const;
 
+    /*class VertexIterator : public std::vector<V>::iterator {};
+
+    class EdgesIterator : public std::vector<Edge<V, E>>::iterator {};
+
+    VertexIterator vBegin() {return }*/
+
+    std::vector<Edge<V, E> > getEdges();
+
   private:
     template <typename V2, typename E2>
     friend std::ostream& operator<< (std::ostream& os, const Multigraph<V2, E2>& dt);
@@ -45,15 +53,15 @@ namespace mg
   template <typename V, typename E>
   std::ostream& operator<< (std::ostream& os, const Multigraph<V, E>& dt)
   {
-    os << dt.vertexes.size();
+    os << dt.vertexes.size() << "\n";
     std::for_each(dt.vertexes.begin(), dt.vertexes.end(), [&os](V i){ os << i << "\n"; });
 
-    os << dt.edges.size();
+    os << dt.edges.size() << "\n";
     std::for_each(dt.edges.begin(), dt.edges.end(), [&os](Edge<V, E> i)
     {
       os << i.getSource() << "\n"
          << i.getDestenation() << "\n"
-         << i.getValue();
+         << i.getValue() << "\n";
     });
 
     return os;
@@ -177,19 +185,19 @@ namespace mg
     outputFile << "digraph {\n";
     std::for_each (vertexes.begin(), vertexes.end(), [&outputFile](V i)
     {
-             outputFile << i << ";";
+             outputFile <<"\"" << i <<"\"" << ";\n";
     });
-    outputFile << "\n";
+//    outputFile << "\n";
     std::for_each (edges.begin(), edges.end(), [&outputFile](Edge<V, E> i)
     {
-             outputFile << i.getSource()
+             outputFile <<"\"" << i.getSource() <<"\""
                         << "->"
-                        << i.getDestenation()
+                        <<"\"" << i.getDestenation() <<"\""
                         << "[label=\""
                         << i.getValue()
-                        << "\"];";
+                        << "\"];\n";
     });
-    outputFile << "\n}";
+    outputFile << "}";
     outputFile.close();
   }
 
@@ -203,6 +211,12 @@ namespace mg
   std::vector<V> Multigraph<V, E>::getVertexes() const
   {
     return vertexes;
+  }
+
+  template<typename V, typename E> inline
+  std::vector<Edge<V, E>> Multigraph<V, E>::getEdges()
+  {
+    return edges;
   }
 
 } // end of namespace
