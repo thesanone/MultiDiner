@@ -32,6 +32,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 
+  for(auto i = graph.beginV(); i != graph.endV(); ++i)
+  {
+    qDebug() << QString::fromStdString(*i);
+  }
+
+  std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
+
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
   ui->horizontalLayout_central->addWidget(view);

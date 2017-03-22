@@ -3,7 +3,6 @@
 
 #include "wheelevent_forqsceneview.h"
 #include "multigraph.h"
-#include "mathparser.h"
 
 #include <QMainWindow>
 #include <QGraphicsScene>

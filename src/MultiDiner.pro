@@ -36,7 +36,6 @@ HEADERS  += mainwindow.h \
     multigraph.h \
     mgexception.h \
     wheelevent_forqsceneview.h \
-    mathparser.h \
     ../ThirdParty/tinyexpr-master/tinyexpr.h
 
 FORMS    += mainwindow.ui

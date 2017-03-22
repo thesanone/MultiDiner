@@ -30,11 +30,31 @@ namespace mg
 
     std::vector<V> getVertexes() const;
 
-    class VertexIterator : public std::vector<V>::iterator {};
+    class VertexIterator
+    {
+    public:
+      VertexIterator(const VertexIterator& iterator);
+      VertexIterator(const size_t position, std::vector<V>* vertex, std::vector<Edge<V, E>>* edge);
+      VertexIterator& operator ++ ();
+      VertexIterator& operator += (const size_t k);
+      VertexIterator& operator -= (const size_t k);
+      bool operator == (const VertexIterator& iterator);
+      bool operator != (const VertexIterator& iterator);
+      V& operator * ();
 
-    /*class EdgesIterator : public std::vector<Edge<V, E>>::iterator {};
+      std::vector<Edge<V, E>*> incomingEdges();
+      std::vector<Edge<V, E>*> outcomingEdges();
 
-    VertexIterator vBegin() {return }*/
+    private:
+      size_t _position;
+      std::vector<V>* _vertexP;
+      std::vector<Edge<V, E>>* _edgeP;
+    };
+
+    /*class EdgesIterator {}*/
+
+    VertexIterator beginV() {return VertexIterator(0, &vertexes, &edges);}
+    VertexIterator endV() {return VertexIterator(vertexes.size(), &vertexes, &edges);}
 
     std::vector<Edge<V, E> > getEdges();
 
@@ -217,6 +237,118 @@ namespace mg
   std::vector<Edge<V, E>> Multigraph<V, E>::getEdges()
   {
     return edges;
+  }
+
+  template<typename V, typename E> inline
+  Multigraph<V, E>::VertexIterator::VertexIterator(const Multigraph<V, E>::VertexIterator &iterator)
+  {
+    _vertexP = iterator._vertexP;
+    _position = iterator._position;
+  }
+
+  template<typename V, typename E> inline
+  Multigraph<V, E>::VertexIterator::VertexIterator(const size_t position, std::vector<V> *vertex, std::vector<Edge<V, E>>* edge)
+  {
+    _position = position;
+    _vertexP = vertex;
+    _edgeP = edge;
+  }
+
+  template<typename V, typename E>
+  typename Multigraph<V, E>::VertexIterator &Multigraph<V, E>::VertexIterator::operator ++()
+  {
+    if(_vertexP->size() < (_position + 1))
+    {
+      throw Exception("Null pointer exception, icrement > MultiGraph-vertexes-size!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      return *this;
+    }
+    _position++;
+    return *this;
+  }
+
+  template<typename V, typename E> inline
+  typename Multigraph<V, E>::VertexIterator &Multigraph<V, E>::VertexIterator::operator += (const size_t k)
+  {
+    if(_vertexP->size() < (_position + k))
+    {
+      throw Exception("Null pointer exception, icrement > MultiGraph-vertexes-size!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      return *this;
+    }
+    _position += k;
+    return *this;
+  }
+
+  template<typename V, typename E> inline
+  typename Multigraph<V, E>::VertexIterator &Multigraph<V, E>::VertexIterator::operator -= (const size_t k)
+  {
+    if(_position - k < 0)
+    {
+      throw Exception("Null pointer exception, decrement < 0 !", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      return *this;
+    }
+    _position -= k;
+    return *this;
+  }
+
+  template<typename V, typename E> inline
+  bool Multigraph<V, E>::VertexIterator::operator ==(const Multigraph<V, E>::VertexIterator &iterator)
+  {
+    return (_vertexP == iterator._vertexP && _position == iterator._position);
+  }
+
+  template<typename V, typename E> inline
+  bool Multigraph<V, E>::VertexIterator::operator !=(const Multigraph<V, E>::VertexIterator &iterator)
+  {
+    return (_vertexP != iterator._vertexP || _position != iterator._position);
+  }
+
+  template<typename V, typename E> inline
+  V &Multigraph<V, E>::VertexIterator::operator *()
+  {
+    //if(_position )
+    return _vertexP->at(_position);
+  }
+
+  template<typename V, typename E> inline
+  std::vector<Edge<V, E> *> Multigraph<V, E>::VertexIterator::incomingEdges()
+  {
+    if(!_vertexP || !_edgeP)
+    {
+      throw Exception("Null pointer exception!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      return *this;
+    }
+
+    std::vector<Edge<V, E> *> result;
+    V current = _vertexP->at(_position);
+
+    std::for_each(_edgeP->begin(), _edgeP->end(), [&result, current](Edge<V, E> i)
+    {
+      if(i.getDestenation() == current)
+        result.push_back(&i);
+    });
+
+    return result;
+  }
+
+  template<typename V, typename E> inline
+  std::vector<Edge<V, E> *> Multigraph<V, E>::VertexIterator::outcomingEdges()
+  {
+    if(!_vertexP || !_edgeP)
+    {
+      throw Exception("Null pointer exception!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      return *this;
+    }
+
+    std::vector<Edge<V, E> *> result;
+    V current = _vertexP->at(_position);
+
+    std::for_each(_edgeP->begin(), _edgeP->end(), [&result, current](Edge<V, E> i)
+    {
+      if(i.getSource() == current)
+        result.push_back(&i);
+    });
+
+    return result;
   }
 
 } // end of namespace

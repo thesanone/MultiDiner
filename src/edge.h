@@ -6,7 +6,7 @@ class Edge
 {
 public:
   Edge() {}
-  Edge(V src, V dst, E value):source(src), destenation(dst), value(value)
+  Edge(V src, V dst, E value):destenation(dst), source(src), value(value)
   {
     /*this->source = src;
     this->destenation = dst;
