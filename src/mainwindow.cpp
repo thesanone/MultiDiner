@@ -39,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
 
+  //auto iterator = graph.beginV();
+
+
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
   ui->horizontalLayout_central->addWidget(view);
