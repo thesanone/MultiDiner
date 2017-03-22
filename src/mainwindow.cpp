@@ -27,9 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     graph.addEdge("Andrey", "Danil", 0.5);
     graph.addEdge("Andrey", "Viktor", 999);
   }
-  catch (mg::Exception e)
+  catch (std::exception& e)
   {
-    QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 
   view = new WheelEvent_forQSceneView(this);
@@ -68,9 +68,9 @@ void MainWindow::addPerson()
     graph.addVertex(text.toLocal8Bit().constData());
     updatePersonsList();
   }
-  catch (mg::Exception e)
+  catch (std::exception& e)
   {
-    QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 }
 
@@ -90,9 +90,9 @@ void MainWindow::addDebt()
           ui->comboBox_debtor->currentText().toLocal8Bit().constData(),
           value);
   }
-  catch (mg::Exception e)
+  catch (std::exception& e)
   {
-    QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
   updateGraph();
 }
@@ -107,7 +107,7 @@ void MainWindow::deletePerson()
       QMessageBox::StandardButton reply = QMessageBox::question(this,"Warning", "Vertex '"+ui->comboBox_personsList->currentText()+"' isn't isolated\n"
                             "Removal of this vertex will lead to the removal of all edges leading to it!\n"
                             "Continue?", QMessageBox::Cancel | QMessageBox::Yes);
-      //QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+      //QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
       if (reply == QMessageBox::Yes)
         graph.deleteVertex(delVertex);
       else
@@ -116,9 +116,9 @@ void MainWindow::deletePerson()
     else
       graph.deleteVertex(delVertex);
   }
-  catch (mg::Exception e)
+  catch (std::exception& e)
   {
-    QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
   updatePersonsList();
 }
@@ -146,9 +146,9 @@ void MainWindow::updateGraph()
   {
     graph.generateDotText("file.dot");
   }
-  catch (mg::Exception e)
+  catch (std::exception& e)
   {
-    QMessageBox::critical(this,"Error!", QString::fromStdString(e.text), QMessageBox::Ok);
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 
 #if defined(_WIN32) || defined(_WIN64)

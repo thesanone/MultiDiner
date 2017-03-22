@@ -30,9 +30,9 @@ namespace mg
 
     std::vector<V> getVertexes() const;
 
-    /*class VertexIterator : public std::vector<V>::iterator {};
+    class VertexIterator : public std::vector<V>::iterator {};
 
-    class EdgesIterator : public std::vector<Edge<V, E>>::iterator {};
+    /*class EdgesIterator : public std::vector<Edge<V, E>>::iterator {};
 
     VertexIterator vBegin() {return }*/
 
@@ -100,7 +100,7 @@ namespace mg
   {
     if(std::find(vertexes.begin(), vertexes.end(), value) != vertexes.end())
     {
-      throw Exception("Vertex already exist!");
+      throw Exception("Vertex already exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return;
     }
 
@@ -112,19 +112,19 @@ namespace mg
   {
     if(src == dst)
     {
-      throw Exception("The multigraph prevents the creation of loops!");
+      throw Exception("The multigraph prevents the creation of loops!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return;
     }
 
     if(std::find(vertexes.begin(), vertexes.end(), src) == vertexes.end())
     {
-      throw Exception("Src vertex doesn't exist!");
+      throw Exception("Src vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return;
     }
 
     if(std::find(vertexes.begin(), vertexes.end(), dst) == vertexes.end())
     {
-      throw Exception("Dst vertex doesn't exist!");
+      throw Exception("Dst vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return;
     }
 
@@ -145,7 +145,7 @@ namespace mg
 
     if(pos == vertexes.end())
     {
-      throw Exception("Vertex doesn't exist!");
+      throw Exception("Vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return;
     }
 
@@ -165,7 +165,7 @@ namespace mg
   {
     if(std::find(vertexes.begin(), vertexes.end(), value) == vertexes.end())
     {
-      throw Exception("Vertex doesn't exist!");
+      throw Exception("Vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       return true;
     }
 

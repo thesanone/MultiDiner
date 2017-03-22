@@ -6,18 +6,18 @@ class Edge
 {
 public:
   Edge() {}
-  Edge(V src, V dst, E value)
+  Edge(V src, V dst, E value):source(src), destenation(dst), value(value)
   {
-    this->source = src;
+    /*this->source = src;
     this->destenation = dst;
-    this->value = value;
+    this->value = value;*/
   }
 
   V getDestenation() const {return destenation;}
-  void setDestenation(const V &value) {destenation = value;}
+  //void setDestenation(const V &value) {destenation = value;}
 
   V getSource() const {return source;}
-  void setSource(const V &value) {source = value;}
+  //void setSource(const V &value) {source = value;}
 
   E getValue() const {return value;}
   void setValue(const E &value) {this->value = value;}

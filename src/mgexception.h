@@ -10,9 +10,16 @@ namespace mg
   {
   public:
     Exception();
-    Exception(std::string text);
+    Exception(std::string text, int line, std::string function, std::string timestamp);
 
+    virtual const char* what() const throw();
+
+
+  private:
     std::string text;
+    int line;
+    std::string function;
+    std::string timestamp;
   };
 } // end of mg namespace
 #endif // MGEXCEPTION_H
