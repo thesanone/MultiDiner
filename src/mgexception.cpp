@@ -20,11 +20,6 @@ Exception::Exception(std::string text, int line, std::string function, std::stri
   function(function),
   timestamp(timestamp)
 {
-
-}
-
-const char *Exception::what() const throw()
-{
   std::ostringstream oss;
   oss  << "Exception \""
        << text
@@ -34,5 +29,10 @@ const char *Exception::what() const throw()
        << line
        << ". Time: "
        << timestamp;
-  return oss.str().c_str();
+  fullString = oss.str();
+}
+
+const char *Exception::what() const throw()
+{
+  return fullString.c_str();
 }

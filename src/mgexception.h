@@ -22,6 +22,7 @@ namespace mg
     int line;
     std::string function;
     std::string timestamp;
+    std::string fullString;
   };
 } // end of mg namespace
 #endif // MGEXCEPTION_H
