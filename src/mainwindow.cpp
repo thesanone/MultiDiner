@@ -32,14 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 
-  /*for(auto i = graph.beginV(); i != graph.endV(); ++i)
-  {
-    qDebug() << QString::fromStdString((*i)->getData());
-  }*/
 
-  //std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
-
-  //auto iterator = graph.beginV();
 
 
   view = new WheelEvent_forQSceneView(this);
@@ -73,8 +66,32 @@ void MainWindow::addPerson()
 {
   try
   {
-    QString text = ui->lineEdit_person->text();
-    text.replace(" ", "_");
+    auto i = graph.beginV();
+  for(;;)
+  {
+    qDebug() << QString::fromStdString((*i)->getData());
+    ++i;
+  }
+
+//  std::for_each(graph.beginV(), graph.endV(), [](mg::Vertex<std::string, double>* i)
+//                {qDebug() << QString::fromStdString(i->getData());});
+  }
+  catch (std::exception& e)
+  {
+    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
+    qDebug() << e.what();
+  }
+
+  QString text = ui->lineEdit_person->text();
+  text.replace(" ", "_");
+  if(text.isEmpty())
+  {
+    QMessageBox::critical(this,"Error!", "Can't add nameless person", QMessageBox::Ok);
+    return;
+  }
+
+  try
+  {
     graph.addVertex(text.toLocal8Bit().constData());
     updatePersonsList();
   }

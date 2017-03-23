@@ -25,6 +25,7 @@ namespace mg
 
     void deleteVertex(V value);
     bool vertexIsIsolated(V value);
+    void deleteEdge(V src, V dst, E value);
 
     void generateDotText(std::string name);
 
@@ -37,7 +38,6 @@ namespace mg
       VertexIterator(const size_t position, std::list<Vertex<V, E>*>* vertex);
       VertexIterator& operator ++ ();
       VertexIterator& operator += (const size_t k);
-      VertexIterator& operator -= (const size_t k);
       bool operator == (const VertexIterator& iterator);
       bool operator != (const VertexIterator& iterator);
       Vertex<V, E>* operator * ();
@@ -45,6 +45,7 @@ namespace mg
     private:
       size_t _position;
       std::list<Vertex<V, E>*>* _vertexP;
+      typename std::list<Vertex<V, E>*>::iterator _vertexIterator;
     };
 
     VertexIterator beginV() {return VertexIterator(0, &vertexes);}
@@ -75,6 +76,7 @@ namespace mg
       std::list<Vertex<V, E>*> vertexes_pool;
       std::list<Edge<V, E>*> edges_pool;
     };
+
     Allocator alloc;
 
   protected:
@@ -146,20 +148,19 @@ namespace mg
   template<typename V, typename E> inline
   void Multigraph<V, E>::addVertex(V value)
   {
-    bool alredyExist = false;
-    std::for_each(vertexes.begin(), vertexes.end(), [value, &alredyExist](Vertex<V, E>* i)
+    auto vertexPos = std::find_if(vertexes.begin(), vertexes.end(), [value](Vertex<V, E>* i)
     {
-      if(i->getData() == value)
-        alredyExist = true;
+      return i->getData() == value;
     });
-    if(alredyExist)
+
+    if(vertexPos != vertexes.end())
     {
       THROW_MG_EXCEPTION("Vertex already exist!");
       return;
     }
 
-    auto newV = alloc.getVertex(value);
-    vertexes.push_back(newV);
+    auto newVertex = alloc.getVertex(value);
+    vertexes.push_back(newVertex);
   }
 
   template<typename V, typename E> inline
@@ -209,23 +210,19 @@ namespace mg
   template<typename V, typename E> inline
   void Multigraph<V, E>::deleteVertex(V value)
   {
-    Vertex<V, E>* vertexPointer = NULL;
     auto vertexPos = std::find_if(
-          vertexes.begin(), vertexes.end(), [value, &vertexPointer](Vertex<V, E>* i)
+          vertexes.begin(), vertexes.end(), [value](Vertex<V, E>* i)
     {
-      if(i->getData() == value)
-      {
-        vertexPointer = i;
-        return true;
-      }
-      return false;
+      return i->getData() == value;
     });
 
-    if(!vertexPointer)
+    if(vertexPos == vertexes.end())
     {
       THROW_MG_EXCEPTION("Vertex doesn't exist!");
       return;
     }
+
+    Vertex<V, E>* vertexPointer = *vertexPos;
 
     auto vertexIncomingEdges = vertexPointer->getIncomingEdges();
     auto vertexOutgoingEdges = vertexPointer->getOutgoingEdges();
@@ -254,24 +251,65 @@ namespace mg
   template<typename V, typename E> inline
   bool Multigraph<V, E>::vertexIsIsolated(V value)
   {
-    Vertex<V, E>* vertexPointer = NULL;
-    std::for_each(vertexes.begin(), vertexes.end(), [value, &vertexPointer](Vertex<V, E>* i)
-    {
-      if(i->getData() == value)
-        vertexPointer = i;
-    });
+    auto vertexPos = std::find_if(
+              vertexes.begin(), vertexes.end(), [value](Vertex<V, E>* i)
+        {
+          return i->getData() == value;
+        });
 
-    if(!vertexPointer)
+    if(vertexPos == vertexes.end())
     {
       THROW_MG_EXCEPTION("Vertex doesn't exist!");
       return false;
     }
+
+    Vertex<V, E>* vertexPointer = *vertexPos;
 
     auto vertexIncomingEdges = vertexPointer->getIncomingEdges();
     auto vertexOutgoingEdges = vertexPointer->getOutgoingEdges();
 
     return (vertexIncomingEdges.empty() &&
             vertexOutgoingEdges.empty());
+  }
+
+  template<typename V, typename E> inline
+  void Multigraph<V, E>::deleteEdge(V src, V dst, E value)
+  {
+    auto srcPos = std::find_if(vertexes.begin(), vertexes.end(),
+                               [src](Vertex<V, E>* i)
+    {
+      return i->getData() == src;
+    });
+
+    if(srcPos == vertexes.end())
+    {
+      THROW_MG_EXCEPTION("src vertex doesn't exist!");
+      return;
+    }
+
+    Vertex<V, E>* srcPointer = *srcPos;
+
+    auto outgoingEdges = srcPointer->getOutgoingEdges();
+
+    auto edgePos = std::find_if(outgoingEdges.begin(), outgoingEdges.end(),
+                               [dst, value](Edge<V, E>* i)
+    {
+      return (i->getDestenation()->getData() == dst)
+          && (i->getValue() == value);
+    });
+
+    if(edgePos == outgoingEdges.end())
+    {
+      THROW_MG_EXCEPTION("edge doesn't exist");
+      return;
+    }
+
+    Edge<V, E>* edgePointer = *edgePos;
+
+    // удаление дуги
+    srcPointer->delOutgoingEdge(edgePointer);
+    edgePointer->getDestenation()->delIncomingEdge(edgePointer);
+    alloc.returnEdge(edgePointer);
   }
 
   template<typename V, typename E> inline
@@ -315,6 +353,8 @@ namespace mg
   {
     _vertexP = iterator._vertexP;
     _position = iterator._position;
+    _vertexIterator = _vertexP->begin();
+    for(size_t i = 0; i < _position; i++) _vertexIterator++;
   }
 
   template<typename V, typename E> inline
@@ -322,6 +362,8 @@ namespace mg
   {
     _position = position;
     _vertexP = vertex;
+    _vertexIterator = _vertexP->begin();
+    for(size_t i = 0; i < _position; i++) _vertexIterator++;
   }
 
   template<typename V, typename E>
@@ -333,6 +375,7 @@ namespace mg
       return *this;
     }
     _position++;
+    _vertexIterator++;
     return *this;
   }
 
@@ -345,37 +388,31 @@ namespace mg
       return *this;
     }
     _position += k;
-    return *this;
-  }
-
-  template<typename V, typename E> inline
-  typename Multigraph<V, E>::VertexIterator &Multigraph<V, E>::VertexIterator::operator -= (const size_t k)
-  {
-    if(_position - k < 0)
-    {
-      THROW_MG_EXCEPTION("Null pointer exception, decrement < 0 !");
-      return *this;
-    }
-    _position -= k;
+    for(size_t i = 0; i < k; i++) _vertexIterator++;
     return *this;
   }
 
   template<typename V, typename E> inline
   bool Multigraph<V, E>::VertexIterator::operator ==(const Multigraph<V, E>::VertexIterator &iterator)
   {
-    return (_vertexP == iterator._vertexP && _position == iterator._position);
+    return (_vertexIterator == iterator._vertexIterator);
   }
 
   template<typename V, typename E> inline
   bool Multigraph<V, E>::VertexIterator::operator !=(const Multigraph<V, E>::VertexIterator &iterator)
   {
-    return (_vertexP != iterator._vertexP || _position != iterator._position);
+    return (_vertexIterator != iterator._vertexIterator);
   }
 
   template<typename V, typename E> inline
   Vertex<V, E> *Multigraph<V, E>::VertexIterator::operator *()
   {
-    return _vertexP->at(_position);
+    if(_position == _vertexP->size())
+    {
+      THROW_MG_EXCEPTION("Null pointer exception, Try access to last NULL element!");
+      return NULL;
+    }
+    return *_vertexIterator;
   }
 
   template<typename V, typename E> inline
