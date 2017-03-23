@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug() << QString::fromStdString((*i)->getData());
   }*/
 
-  std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
+  //std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
 
   //auto iterator = graph.beginV();
 
@@ -139,10 +139,10 @@ void MainWindow::updatePersonsList()
   ui->comboBox_debtor->clear();
   ui->comboBox_personsList->clear();
 
-  std::vector<std::string> vertexes = graph.getVertexes();
-  std::for_each (vertexes.begin(), vertexes.end(), [this](std::string i)
+  auto vertexes = graph.getVertexes();
+  std::for_each (vertexes.begin(), vertexes.end(), [this](mg::Vertex<std::string, double>* i)
   {
-    QString name = QString::fromStdString(i);
+    QString name = QString::fromStdString(i->getData());
     ui->comboBox_creditor->addItem(name);
     ui->comboBox_debtor->addItem(name);
     ui->comboBox_personsList->addItem(name);

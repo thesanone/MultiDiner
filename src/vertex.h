@@ -2,7 +2,7 @@
 #define VERTEX_H
 
 #include "mgexception.h"
-#include <vector>
+#include <list>
 #include <algorithm>
 
 namespace mg
@@ -20,8 +20,8 @@ public:
   V getData() const;
   void setData(const V &value);
 
-  std::vector<Edge<V, E>* >* getIncomingEdges();
-  std::vector<Edge<V, E>* >* getOutgoingEdges();
+  std::list<Edge<V, E>* > getIncomingEdges() const;
+  std::list<Edge<V, E>* > getOutgoingEdges() const;
 
   void addIncomingEdge(Edge<V, E> *edge);
   void delIncomingEdge(Edge<V, E> *edge);
@@ -30,8 +30,8 @@ public:
 
 private:
   V data;
-  std::vector<Edge<V, E>* > incomingEdges;
-  std::vector<Edge<V, E>* > outgoingEdges;
+  std::list<Edge<V, E>* > incomingEdges;
+  std::list<Edge<V, E>* > outgoingEdges;
 };
 
 
@@ -67,15 +67,15 @@ void Vertex<V, E>::setData(const V &value)
 }
 
 template<typename V, typename E> inline
-std::vector<Edge<V, E> *> *Vertex<V, E>::getIncomingEdges()
+std::list<Edge<V, E> *> Vertex<V, E>::getIncomingEdges() const
 {
-  return &incomingEdges;
+  return incomingEdges;
 }
 
 template<typename V, typename E> inline
-std::vector<Edge<V, E> *> *Vertex<V, E>::getOutgoingEdges()
+std::list<Edge<V, E> *> Vertex<V, E>::getOutgoingEdges() const
 {
-  return &outgoingEdges;
+  return outgoingEdges;
 }
 
 template<typename V, typename E> inline

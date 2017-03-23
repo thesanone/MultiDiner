@@ -5,7 +5,7 @@
 #include "edge.h"
 #include "mgexception.h"
 
-#include <vector>
+#include <list>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -28,13 +28,13 @@ namespace mg
 
     void generateDotText(std::string name);
 
-    std::vector<Vertex<V, E>> getVertexes() const;
+    std::list<Vertex<V, E> *> getVertexes() const;
 
     class VertexIterator
     {
     public:
       VertexIterator(const VertexIterator& iterator);
-      VertexIterator(const size_t position, std::vector<Vertex<V, E>>* vertex);
+      VertexIterator(const size_t position, std::list<Vertex<V, E>*>* vertex);
       VertexIterator& operator ++ ();
       VertexIterator& operator += (const size_t k);
       VertexIterator& operator -= (const size_t k);
@@ -44,7 +44,7 @@ namespace mg
 
     private:
       size_t _position;
-      std::vector<Vertex<V, E>*>* _vertexP;
+      std::list<Vertex<V, E>*>* _vertexP;
     };
 
     VertexIterator beginV() {return VertexIterator(0, &vertexes);}
@@ -72,13 +72,13 @@ namespace mg
       void returnAll();
 
     private:
-      std::vector<Vertex<V, E>*> vertexes_pool;
-      std::vector<Edge<V, E>*> edges_pool;
+      std::list<Vertex<V, E>*> vertexes_pool;
+      std::list<Edge<V, E>*> edges_pool;
     };
     Allocator alloc;
 
   protected:
-    std::vector<Vertex<V, E>*> vertexes;
+    std::list<Vertex<V, E>*> vertexes;
   };
 
 
@@ -90,42 +90,29 @@ namespace mg
   template <typename V, typename E>
   std::ostream& operator<< (std::ostream& os, const Multigraph<V, E>& dt)
   {
-    /*os << dt.vertexes.size() << "\n";
-    std::for_each(dt.vertexes.begin(), dt.vertexes.end(), [&os](V i){ os << i << "\n"; });
-
-    os << dt.edges.size() << "\n";
-    std::for_each(dt.edges.begin(), dt.edges.end(), [&os](Edge<V, E> i)
+    os << dt.vertexes.size() << "\n";
+    size_t edgesCounter = 0;
+    std::for_each (dt.vertexes.begin(), dt.vertexes.end(), [&os, &edgesCounter](Vertex<V, E>* i)
     {
-      os << i.getSource() << "\n"
-         << i.getDestenation() << "\n"
-         << i.getValue() << "\n";
+             os << i->getData() << "\n";
+             edgesCounter += i->getOutgoingEdges().size();
     });
 
-    return os;*/
+    os << edgesCounter << "\n";
 
-    os << dt.vertexes.size() << "\n";/*
-    std::for_each (vertexes.begin(), vertexes.end(), [&outputFile](Vertex<V, E>* i)
-    {
-             outputFile <<"\"" << i->getData() <<"\"" << ";\n";
-    });
-
-    std::for_each (vertexes.begin(), vertexes.end(), [&outputFile](Vertex<V, E>* i)
+    std::for_each (dt.vertexes.begin(), dt.vertexes.end(), [&os](Vertex<V, E>* i)
     {
       auto outgoingEdges = i->getOutgoingEdges();
 
-      std::for_each(outgoingEdges->begin(), outgoingEdges->end(), [&outputFile](Edge<V, E>* j)
+      std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [&os](Edge<V, E>* j)
       {
-        outputFile <<"\"" << j->getSource()->getData() <<"\""
-                   << "->"
-                   <<"\"" << j->getDestenation()->getData() <<"\""
-                   << "[label=\""
-                   << j->getValue()
-                   << "\"];\n";
+        os << j->getSource()->getData() << "\n"
+           << j->getDestenation()->getData() << "\n"
+           << j->getValue() << "\n";
       });
-
     });
-    outputFile << "}";
-    outputFile.close();*/
+
+    return os;
   }
 
   template <typename V, typename E>
@@ -139,7 +126,7 @@ namespace mg
      for(size_t i = 0; i != vertexesSize; i++)
      {
        is >> obj;
-       dt.vertexes.push_back(obj);
+       dt.addVertex(obj);
      }
 
      is >> edgesSize;
@@ -150,7 +137,7 @@ namespace mg
        is >> obj
           >> obj2
           >> valueObj;
-       dt.edges.push_back(Edge<V, E>(obj, obj2, valueObj));
+       dt.addEdge(obj, obj2, valueObj);
      }
 
      return is;
@@ -167,12 +154,12 @@ namespace mg
     });
     if(alredyExist)
     {
-      //throw Exception("Vertex already exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("Vertex already exist!");
       return;
     }
 
-    vertexes.push_back(alloc.getVertex(value));
+    auto newV = alloc.getVertex(value);
+    vertexes.push_back(newV);
   }
 
   template<typename V, typename E> inline
@@ -180,7 +167,6 @@ namespace mg
   {
     if(src == dst)
     {
-      //throw Exception("The multigraph prevents the creation of loops!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("The multigraph prevents the creation of loops!");
       return;
     }
@@ -198,14 +184,12 @@ namespace mg
 
     if(!srcPointer)
     {
-      //throw Exception("Src vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("Src vertex doesn't exist!");
       return;
     }
 
     if(!dstPointer)
     {
-      throw Exception("Dst vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("Dst vertex doesn't exist!");
       return;
     }
@@ -226,15 +210,19 @@ namespace mg
   void Multigraph<V, E>::deleteVertex(V value)
   {
     Vertex<V, E>* vertexPointer = NULL;
-    std::for_each(vertexes.begin(), vertexes.end(), [value, &vertexPointer](Vertex<V, E>* i)
+    auto vertexPos = std::find_if(
+          vertexes.begin(), vertexes.end(), [value, &vertexPointer](Vertex<V, E>* i)
     {
       if(i->getData() == value)
+      {
         vertexPointer = i;
+        return true;
+      }
+      return false;
     });
 
     if(!vertexPointer)
     {
-      //throw Exception("Vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("Vertex doesn't exist!");
       return;
     }
@@ -242,7 +230,7 @@ namespace mg
     auto vertexIncomingEdges = vertexPointer->getIncomingEdges();
     auto vertexOutgoingEdges = vertexPointer->getOutgoingEdges();
 
-    std::for_each(vertexIncomingEdges->begin(), vertexIncomingEdges->end(),
+    std::for_each(vertexIncomingEdges.begin(), vertexIncomingEdges.end(),
                   [this](Edge<V, E>* i)
     {
       i->getSource()->delOutgoingEdge(i);
@@ -250,13 +238,15 @@ namespace mg
       alloc.returnEdge(i);
     });
 
-    std::for_each(vertexOutgoingEdges->begin(), vertexOutgoingEdges->end(),
+    std::for_each(vertexOutgoingEdges.begin(), vertexOutgoingEdges.end(),
                   [this](Edge<V, E>* i)
     {
       i->getDestenation()->delIncomingEdge(i);
       i->getSource()->delOutgoingEdge(i);
       alloc.returnEdge(i);
     });
+
+    vertexes.erase(vertexPos);
 
     alloc.returnVertex(vertexPointer);
   }
@@ -273,7 +263,6 @@ namespace mg
 
     if(!vertexPointer)
     {
-      //throw Exception("Vertex doesn't exist!", __LINE__, __FUNCTION__, __TIMESTAMP__);
       THROW_MG_EXCEPTION("Vertex doesn't exist!");
       return false;
     }
@@ -281,8 +270,8 @@ namespace mg
     auto vertexIncomingEdges = vertexPointer->getIncomingEdges();
     auto vertexOutgoingEdges = vertexPointer->getOutgoingEdges();
 
-    return (vertexIncomingEdges && vertexIncomingEdges->empty() &&
-            vertexOutgoingEdges && vertexOutgoingEdges->empty());
+    return (vertexIncomingEdges.empty() &&
+            vertexOutgoingEdges.empty());
   }
 
   template<typename V, typename E> inline
@@ -300,7 +289,7 @@ namespace mg
     {
       auto outgoingEdges = i->getOutgoingEdges();
 
-      std::for_each(outgoingEdges->begin(), outgoingEdges->end(), [&outputFile](Edge<V, E>* j)
+      std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [&outputFile](Edge<V, E>* j)
       {
         outputFile <<"\"" << j->getSource()->getData() <<"\""
                    << "->"
@@ -316,7 +305,7 @@ namespace mg
   }
 
   template<typename V, typename E> inline
-  std::vector<Vertex<V, E> > Multigraph<V, E>::getVertexes() const
+  std::list<Vertex<V, E> *> Multigraph<V, E>::getVertexes() const
   {
     return vertexes;
   }
@@ -329,7 +318,7 @@ namespace mg
   }
 
   template<typename V, typename E> inline
-  Multigraph<V, E>::VertexIterator::VertexIterator(const size_t position, std::vector<Vertex<V, E>> *vertex)
+  Multigraph<V, E>::VertexIterator::VertexIterator(const size_t position, std::list<Vertex<V, E>*> *vertex)
   {
     _position = position;
     _vertexP = vertex;
@@ -340,7 +329,7 @@ namespace mg
   {
     if(_vertexP->size() < (_position + 1))
     {
-      throw Exception("Null pointer exception, icrement > MultiGraph-vertexes-size!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      THROW_MG_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
       return *this;
     }
     _position++;
@@ -352,7 +341,7 @@ namespace mg
   {
     if(_vertexP->size() < (_position + k))
     {
-      throw Exception("Null pointer exception, icrement > MultiGraph-vertexes-size!", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      THROW_MG_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
       return *this;
     }
     _position += k;
@@ -364,7 +353,7 @@ namespace mg
   {
     if(_position - k < 0)
     {
-      throw Exception("Null pointer exception, decrement < 0 !", __LINE__, __FUNCTION__, __TIMESTAMP__);
+      THROW_MG_EXCEPTION("Null pointer exception, decrement < 0 !");
       return *this;
     }
     _position -= k;
@@ -384,9 +373,8 @@ namespace mg
   }
 
   template<typename V, typename E> inline
-  Vertex<V, E> &Multigraph<V, E>::VertexIterator::operator *()
+  Vertex<V, E> *Multigraph<V, E>::VertexIterator::operator *()
   {
-    //if(_position )
     return _vertexP->at(_position);
   }
 
@@ -424,6 +412,7 @@ namespace mg
     }
 
     vertexes_pool.erase(pos);
+    delete vertex;
   }
 
   template<typename V, typename E> inline
@@ -438,6 +427,7 @@ namespace mg
     }
 
     edges_pool.erase(pos);
+    delete edge;
   }
 
   template<typename V, typename E> inline
@@ -448,6 +438,8 @@ namespace mg
 
     std::for_each(edges_pool.begin(), edges_pool.end(),
                   [](Edge<V, E>* i) {delete i;});
+    vertexes_pool.clear();
+    edges_pool.clear();
   }
 
 } // end of namespace
