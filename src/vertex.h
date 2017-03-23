@@ -2,12 +2,13 @@
 #define VERTEX_H
 
 #include "mgexception.h"
-#include "edge.h"
 #include <vector>
 #include <algorithm>
 
 namespace mg
 {
+
+template <typename V, typename E> class Edge;
 
 template<typename V, typename E>
 class Vertex
@@ -23,7 +24,9 @@ public:
   std::vector<Edge<V, E>* >* getOutgoingEdges();
 
   void addIncomingEdge(Edge<V, E> *edge);
+  void delIncomingEdge(Edge<V, E> *edge);
   void addOutgoingEdge(Edge<V, E> *edge);
+  void delOutgoingEdge(Edge<V, E> *edge);
 
 private:
   V data;
@@ -46,16 +49,18 @@ Vertex<V, E>::Vertex(V& dt)
 template<typename V, typename E> inline
 Vertex<V, E>::~Vertex()
 {
-  std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [](Edge<V, E>* i) {delete (*i);});
+  //std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [](Edge<V, E>* i) {delete (*i);});
   outgoingEdges.clear();
   incomingEdges.clear();
 }
 
+template<typename V, typename E> inline
 V Vertex<V, E>::getData() const
 {
   return data;
 }
 
+template<typename V, typename E> inline
 void Vertex<V, E>::setData(const V &value)
 {
   data = value;
@@ -84,6 +89,20 @@ void Vertex<V, E>::addIncomingEdge(Edge<V, E> *edge)
   incomingEdges.push_back(edge);
 }
 
+template<typename V, typename E>
+void Vertex<V, E>::delIncomingEdge(Edge<V, E> *edge)
+{
+  auto pos = std::find(incomingEdges.begin(), incomingEdges.end(), edge);
+
+  if(pos == incomingEdges.end())
+  {
+    THROW_MG_EXCEPTION("Vertex doesn't exist!");
+    return;
+  }
+
+  incomingEdges.erase(pos);
+}
+
 template<typename V, typename E> inline
 void Vertex<V, E>::addOutgoingEdge(Edge<V, E> *edge)
 {
@@ -93,6 +112,20 @@ void Vertex<V, E>::addOutgoingEdge(Edge<V, E> *edge)
     return;
   }
   outgoingEdges.push_back(edge);
+}
+
+template<typename V, typename E> inline
+void Vertex<V, E>::delOutgoingEdge(Edge<V, E> *edge)
+{
+  auto pos = std::find(outgoingEdges.begin(), outgoingEdges.end(), edge);
+
+  if(pos == outgoingEdges.end())
+  {
+    THROW_MG_EXCEPTION("Vertex doesn't exist!");
+    return;
+  }
+
+  outgoingEdges.erase(pos);
 }
 
 } // end of mg namespace

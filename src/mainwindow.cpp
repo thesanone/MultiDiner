@@ -32,10 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
   }
 
-  for(auto i = graph.beginV(); i != graph.endV(); ++i)
+  /*for(auto i = graph.beginV(); i != graph.endV(); ++i)
   {
-    qDebug() << QString::fromStdString(*i);
-  }
+    qDebug() << QString::fromStdString((*i)->getData());
+  }*/
 
   std::for_each(graph.beginV(), graph.endV(), [](std::string i){qDebug() << QString::fromStdString(i);});
 

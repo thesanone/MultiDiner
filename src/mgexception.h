@@ -6,6 +6,8 @@
 
 namespace mg
 {
+#define THROW_MG_EXCEPTION(s) throw Exception(s, __LINE__, __FUNCTION__, __TIMESTAMP__)
+
   class Exception : public std::exception
   {
   public:
