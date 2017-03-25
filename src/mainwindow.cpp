@@ -181,6 +181,8 @@ void MainWindow::actionShowControllPanel()
 
 void MainWindow::actionSaveGraph()
 {
+  actionReduseEdges();
+
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save file"), "",
           tr("(*.mg)"));
 
