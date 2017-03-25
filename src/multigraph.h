@@ -26,6 +26,7 @@ namespace mg
     void deleteVertex(V value);
     bool vertexIsIsolated(V value);
     void deleteEdge(V src, V dst, E value);
+    void deleteEdge(Edge<V, E>* edge);
 
     void generateDotText(std::string name);
 
@@ -313,10 +314,23 @@ namespace mg
   }
 
   template<typename V, typename E> inline
+  void Multigraph<V, E>::deleteEdge(Edge<V, E> *edge)
+  {
+    edge->getSource()->delOutgoingEdge(edge);
+    edge->getDestenation()->delIncomingEdge(edge);
+    alloc.returnEdge(edge);
+  }
+
+  template<typename V, typename E> inline
   void Multigraph<V, E>::generateDotText(std::string name)
   {
     std::ofstream outputFile;
     outputFile.open(name);
+    if(!outputFile.is_open())
+    {
+      THROW_MG_EXCEPTION("Cant open file \"" + name + "\"!");
+      return;
+    }
     outputFile << "digraph {\n";
     std::for_each (vertexes.begin(), vertexes.end(), [&outputFile](Vertex<V, E>* i)
     {
