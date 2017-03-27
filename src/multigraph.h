@@ -126,7 +126,7 @@ namespace mg
      is >> vertexesSize;
 
      V obj;
-     for(size_t i = 0; i != vertexesSize; i++)
+     for(size_t i = 0; i != vertexesSize && !is.eof(); i++)
      {
        is >> obj;
        dt.addVertex(obj);
@@ -135,7 +135,7 @@ namespace mg
      is >> edgesSize;
      V obj2;
      E valueObj;
-     for(size_t i = 0; i != edgesSize; i++)
+     for(size_t i = 0; i != edgesSize && !is.eof(); i++)
      {
        is >> obj
           >> obj2
