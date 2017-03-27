@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 namespace mg
 {
@@ -85,6 +86,30 @@ namespace mg
   };
 
 
+  template<typename V, typename E>
+  class EdgeManipulator
+  {
+  public:
+    EdgeManipulator(Edge<V, E>* val){edgePointer = val;}
+
+    template <typename V2, typename E2>
+    friend std::ostream& operator<< (std::ostream& os, const EdgeManipulator<V2, E2>& dt);
+
+  private:
+    Edge<V, E>* edgePointer;
+  };
+
+  template<typename V, typename E>
+  std::ostream& operator<< (std::ostream& os, const EdgeManipulator<V, E>& dt)
+  {
+    os << dt.edgePointer->getSource()->getData() << "\n"
+       << dt.edgePointer->getDestenation()->getData() << "\n"
+       << dt.edgePointer->getValue() << "\n";
+    return os;
+  }
+
+
+
   // ********************************************************************************************
   // *********************************** impelementatin *****************************************
   // ********************************************************************************************
@@ -109,9 +134,7 @@ namespace mg
 
       std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [&os](Edge<V, E>* j)
       {
-        os << j->getSource()->getData() << "\n"
-           << j->getDestenation()->getData() << "\n"
-           << j->getValue() << "\n";
+        os << EdgeManipulator<V, E>(j);
       });
     });
 
