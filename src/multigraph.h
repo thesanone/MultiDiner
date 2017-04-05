@@ -179,7 +179,7 @@ namespace mg
 
     if(vertexPos != vertexes.end())
     {
-      THROW_MG_EXCEPTION("Vertex already exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Vertex already exist!", *vertexPos, (*vertexPos)->getData(), V, E);
       return;
     }
 
@@ -192,7 +192,7 @@ namespace mg
   {
     if(src == dst)
     {
-      THROW_MG_EXCEPTION("The multigraph prevents the creation of loops!");
+      THROW_MG_EDGE_EXISTING_EXCEPTION("The multigraph prevents the creation of loops!", NULL, V, E);
       return;
     }
 
@@ -209,13 +209,13 @@ namespace mg
 
     if(!srcPointer)
     {
-      THROW_MG_EXCEPTION("Src vertex doesn't exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Src vertex doesn't exist!", NULL, src, V, E);
       return;
     }
 
     if(!dstPointer)
     {
-      THROW_MG_EXCEPTION("Dst vertex doesn't exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Dst vertex doesn't exist!", NULL, dst, V, E);
       return;
     }
 
@@ -242,7 +242,7 @@ namespace mg
 
     if(vertexPos == vertexes.end())
     {
-      THROW_MG_EXCEPTION("Vertex doesn't exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Vertex doesn't exist!", NULL, value, V, E);
       return;
     }
 
@@ -283,7 +283,7 @@ namespace mg
 
     if(vertexPos == vertexes.end())
     {
-      THROW_MG_EXCEPTION("Vertex doesn't exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Vertex doesn't exist!", NULL, value, V, E);
       return false;
     }
 
@@ -307,7 +307,7 @@ namespace mg
 
     if(srcPos == vertexes.end())
     {
-      THROW_MG_EXCEPTION("src vertex doesn't exist!");
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("src vertex doesn't exist!", NULL, src, V, E);
       return;
     }
 
@@ -324,7 +324,7 @@ namespace mg
 
     if(edgePos == outgoingEdges.end())
     {
-      THROW_MG_EXCEPTION("edge doesn't exist");
+      THROW_MG_EDGE_EXISTING_EXCEPTION("edge doesn't exist", NULL, V, E);
       return;
     }
 
@@ -408,7 +408,7 @@ namespace mg
   {
     if(_vertexP->size() < (_position + 1))
     {
-      THROW_MG_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
+      THROW_MG_NULL_POINTER_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
       return *this;
     }
     _position++;
@@ -421,7 +421,7 @@ namespace mg
   {
     if(_vertexP->size() < (_position + k))
     {
-      THROW_MG_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
+      THROW_MG_NULL_POINTER_EXCEPTION("Null pointer exception, icrement > MultiGraph-vertexes-size!");
       return *this;
     }
     _position += k;
@@ -446,7 +446,7 @@ namespace mg
   {
     if(_position == _vertexP->size())
     {
-      THROW_MG_EXCEPTION("Null pointer exception, Try access to last NULL element!");
+      THROW_MG_NULL_POINTER_EXCEPTION("Null pointer exception, Try access to last NULL element!");
       return NULL;
     }
     return *_vertexIterator;
@@ -481,7 +481,7 @@ namespace mg
 
     if(pos == vertexes_pool.end())
     {
-      THROW_MG_EXCEPTION("can't find returned value in vertex pool!");
+      THROW_MG_ALLOCATOR_EXCEPTION("can't find returned value in vertex pool!");
       return;
     }
 
@@ -496,7 +496,7 @@ namespace mg
 
     if(pos == edges_pool.end())
     {
-      THROW_MG_EXCEPTION("can't find returned value in edges pool!");
+      THROW_MG_ALLOCATOR_EXCEPTION("can't find returned value in edges pool!");
       return;
     }
 
