@@ -16,26 +16,31 @@
     QMessageBox::information(this,"Exception!", QString(e.what()), QMessageBox::Ok);\
   }
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QString graphPath, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
 
-  if(QFileInfo::exists("default.mg"))
+  std::ifstream inputFile;
+  if(graphPath.isEmpty())
   {
-    std::ifstream inputFile;
-    inputFile.open("default.mg");
-
-    MD_TRY
-    inputFile >> graph;
-    MD_CATCH
-
-    Q_ASSERT(graph.checkGraphInvariant());
+    if(QFileInfo::exists("default.mg"))
+      inputFile.open("default.mg");
   }
-  /*else
-    QMessageBox::information(this,"Default graph doesn't exist!",
-                             "Can't open \"default.mg\" please load another graph, or create new.", QMessageBox::Ok);*/
+  else
+  {
+    if(QFileInfo::exists(graphPath))
+      inputFile.open(graphPath.toLocal8Bit());
+  }
+
+  MD_TRY
+  inputFile >> graph;
+  MD_CATCH
+
+  inputFile.close();
+
+  Q_ASSERT(graph.checkGraphInvariant());
 
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -59,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
   readSettings("settings.ini");
 
   updatePersonsList();
+  updateGraph();
 }
 
 MainWindow::~MainWindow()
@@ -79,8 +85,10 @@ void MainWindow::addPerson()
 
   MD_TRY
   graph.addVertex(text.toLocal8Bit().constData());
-  updatePersonsList();
   MD_CATCH
+
+  updatePersonsList();
+  updateGraph();
 }
 
 void MainWindow::addDebt()
@@ -119,6 +127,7 @@ void MainWindow::deletePerson()
     graph.deleteVertex(delVertex);
   MD_CATCH
   updatePersonsList();
+  updateGraph();
 }
 
 void MainWindow::updatePersonsList()
@@ -138,7 +147,6 @@ void MainWindow::updatePersonsList()
     ui->comboBox_personsList->addItem(name);
   });
   MD_CATCH
-  updateGraph();
 }
 
 void MainWindow::updateGraph()
