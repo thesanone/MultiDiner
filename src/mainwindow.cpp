@@ -34,11 +34,14 @@ MainWindow::MainWindow(QString graphPath, QWidget *parent) :
       inputFile.open(graphPath.toLocal8Bit());
   }
 
-  MD_TRY
-  inputFile >> graph;
-  MD_CATCH
+  if(inputFile.is_open())
+  {
+    MD_TRY
+    inputFile >> graph;
+    MD_CATCH
 
-  inputFile.close();
+    inputFile.close();
+  }
 
   Q_ASSERT(graph.checkGraphInvariant());
 
