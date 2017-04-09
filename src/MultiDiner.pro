@@ -40,3 +40,6 @@ HEADERS  += mainwindow.h \
     vertex.h
 
 FORMS    += mainwindow.ui
+
+
+RESOURCES += resources.qrc

@@ -26,10 +26,8 @@ private slots:
   void addDebt();
   void deletePerson();
 
-  /// обновление списка вершин графа в комбо боксах панели контроли
   void updatePersonsList();
 
-  /// обновление отображаемого графа
   void updateGraph();
 
   // actions
@@ -38,14 +36,19 @@ private slots:
   void actionLoadGraph();
   void actionReduseEdges();
 
+
+  //settings
+  void readSettings(QString file, QString group = "MainWindow");
+  void writeSettings(QString file, QString group = "MainWindow");
+
 private:
   Ui::MainWindow *ui;
 
+  // Graph invariant check
+  bool checkGraphInvariant();
+
   // Main container
   mg::Multigraph<std::string, double> graph;
-
-  /// Парсер математических выражений
-  //MathParser mathParser;
 
   // GUI elements
   WheelEvent_forQSceneView *view;

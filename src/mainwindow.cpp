@@ -7,12 +7,13 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QSettings>
 
 #define MD_TRY try {
 #define MD_CATCH }\
   catch (std::exception& e)\
   {\
-    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);\
+    QMessageBox::information(this,"Exception!", QString(e.what()), QMessageBox::Ok);\
   }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -20,22 +21,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
-  MD_TRY
-  graph.addVertex("Viktor");
-  graph.addVertex("Danil");
-  graph.addVertex("Kirill");
-  graph.addVertex("Andrey");
-  graph.addEdge("Viktor", "Danil", 38);
-  graph.addEdge("Kirill", "Andrey", 100);
-  graph.addEdge("Danil", "Kirill", 21.5);
-  graph.addEdge("Kirill", "Andrey", 5.5);
-  graph.addEdge("Kirill", "Viktor", 51);
-  graph.addEdge("Andrey", "Danil", 0.5);
-  graph.addEdge("Andrey", "Viktor", 999);
-  MD_CATCH
 
+  if(QFileInfo::exists("default.mg"))
+  {
+    std::ifstream inputFile;
+    inputFile.open("default.mg");
 
+    MD_TRY
+    inputFile >> graph;
+    MD_CATCH
 
+    Q_ASSERT(graph.checkGraphInvariant());
+  }
+  /*else
+    QMessageBox::information(this,"Default graph doesn't exist!",
+                             "Can't open \"default.mg\" please load another graph, or create new.", QMessageBox::Ok);*/
 
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -56,33 +56,19 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(ui->actionLoad_graph, SIGNAL(triggered(bool)), this, SLOT(actionLoadGraph()));
   connect(ui->actionReduce_edges, SIGNAL(triggered(bool)), this, SLOT(actionReduseEdges()));
 
+  readSettings("settings.ini");
+
   updatePersonsList();
 }
 
 MainWindow::~MainWindow()
 {
+  writeSettings("settings.ini");
   delete ui;
 }
 
 void MainWindow::addPerson()
 {
-  /*try
-  {
-    auto i = graph.beginV();
-  for(;;)
-  {
-    qDebug() << QString::fromStdString((*i)->getData());
-    ++i;
-  }
-
-//  std::for_each(graph.beginV(), graph.endV(), [](mg::Vertex<std::string, double>* i)
-//                {qDebug() << QString::fromStdString(i->getData());});
-  }
-  catch (std::exception& e)
-  {
-    QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
-  }*/
-
   QString text = ui->lineEdit_person->text();
   text.replace(" ", "_");
   if(text.isEmpty())
@@ -124,7 +110,6 @@ void MainWindow::deletePerson()
     QMessageBox::StandardButton reply = QMessageBox::question(this,"Warning", "Vertex '"+ui->comboBox_personsList->currentText()+"' isn't isolated\n"
                           "Removal of this vertex will lead to the removal of all edges leading to it!\n"
                           "Continue?", QMessageBox::Cancel | QMessageBox::Yes);
-    //QMessageBox::critical(this,"Error!", QString(e.what()), QMessageBox::Ok);
     if (reply == QMessageBox::Yes)
       graph.deleteVertex(delVertex);
     else
@@ -205,8 +190,23 @@ void MainWindow::actionLoadGraph()
     std::ifstream inputFile;
     inputFile.open(fileName.toLocal8Bit().constData());
     graph.clear();
+
+    MD_TRY
     inputFile >> graph;
+    MD_CATCH
+
     inputFile.close();
+
+    /* // custom error
+    auto bad = graph.beginV();
+    auto badPV = (*bad);
+    auto badPEI = badPV->getIncomingEdges().begin();
+    auto badPE = (*badPEI);
+    badPV->delIncomingEdge(badPE);*/
+
+    Q_ASSERT(graph.checkGraphInvariant());
+
+    updatePersonsList();
     updateGraph();
   }
 }
@@ -280,7 +280,26 @@ void MainWindow::actionReduseEdges()
       }
     });
   });
+
   MD_CATCH
 
-  updateGraph();
+      updateGraph();
+}
+
+void MainWindow::readSettings(QString file, QString group)
+{
+  QSettings settings(file, QSettings::IniFormat);
+  settings.beginGroup(group);
+  restoreGeometry(settings.value("geometry").toByteArray());
+  restoreState(settings.value("state").toByteArray());
+  settings.endGroup();
+}
+
+void MainWindow::writeSettings(QString file, QString group)
+{
+  QSettings settings(file, QSettings::IniFormat);
+  settings.beginGroup(group);
+  settings.setValue("geometry", saveGeometry());
+  settings.setValue("state", saveState());
+  settings.endGroup();
 }

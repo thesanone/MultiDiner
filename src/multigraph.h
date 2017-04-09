@@ -33,6 +33,9 @@ namespace mg
 
     std::list<Vertex<V, E> *> getVertexes() const;
 
+    // invariant
+    bool checkGraphInvariant();
+
     class VertexIterator
     {
     public:
@@ -99,21 +102,22 @@ namespace mg
     Edge<V, E>* edgePointer;
   };
 
-  template<typename V, typename E>
-  std::ostream& operator<< (std::ostream& os, const EdgeManipulator<V, E>& dt)
-  {
-    os << dt.edgePointer->getSource()->getData() << "\n"
-       << dt.edgePointer->getDestenation()->getData() << "\n"
-       << dt.edgePointer->getValue() << "\n";
-    return os;
-  }
-
-
 
   // ********************************************************************************************
   // *********************************** impelementatin *****************************************
   // ********************************************************************************************
 
+
+  template<typename V, typename E>
+  std::ostream& operator<< (std::ostream& os, const EdgeManipulator<V, E>& dt)
+  {
+    if(!dt.edgePointer) return os;
+
+    os << dt.edgePointer->getSource()->getData() << "\n"
+       << dt.edgePointer->getDestenation()->getData() << "\n"
+       << dt.edgePointer->getValue() << "\n";
+    return os;
+  }
 
   template <typename V, typename E>
   std::ostream& operator<< (std::ostream& os, const Multigraph<V, E>& dt)
@@ -185,6 +189,10 @@ namespace mg
 
     auto newVertex = alloc.getVertex(value);
     vertexes.push_back(newVertex);
+
+    if(std::find(vertexes.begin(), vertexes.end(), newVertex) == vertexes.end())
+      THROW_MG_VERTEX_EXISTING_EXCEPTION("Vertex wasn't added!", newVertex, value, V, E);
+
   }
 
   template<typename V, typename E> inline
@@ -222,6 +230,16 @@ namespace mg
     auto newEdge = alloc.getEdge(srcPointer, dstPointer, value);
     srcPointer->addOutgoingEdge(newEdge);
     dstPointer->addIncomingEdge(newEdge);
+
+    // check postcondition
+    auto srcOutgoingEdges = srcPointer->getOutgoingEdges();
+    auto dstIncomingEdges = dstPointer->getIncomingEdges();
+
+    if(std::find(srcOutgoingEdges.begin(), srcOutgoingEdges.end(), newEdge) == srcOutgoingEdges.end())
+      THROW_MG_EDGE_EXISTING_EXCEPTION("Edge wasn't added in src outgoing edges!", newEdge, V, E);
+
+    if(std::find(dstIncomingEdges.begin(), dstIncomingEdges.end(), newEdge) == dstIncomingEdges.end())
+      THROW_MG_EDGE_EXISTING_EXCEPTION("Edge wasn't added in dst incoming edges!", newEdge, V, E);
   }
 
   template<typename V, typename E> inline
@@ -383,6 +401,55 @@ namespace mg
   std::list<Vertex<V, E> *> Multigraph<V, E>::getVertexes() const
   {
     return vertexes;
+  }
+
+  template<typename V, typename E> inline
+  bool Multigraph<V, E>::checkGraphInvariant()
+  {
+    // step 1
+
+    size_t incomingEdgesCounter = 0;
+    size_t outgoingEdgesCounter = 0;
+
+    for(auto i = vertexes.begin(); i != vertexes.end(); ++i)
+    {
+      if((*i) == NULL)
+        return false;
+      incomingEdgesCounter += (*i)->getIncomingEdges().size();
+      outgoingEdgesCounter += (*i)->getOutgoingEdges().size();
+    }
+
+    if(incomingEdgesCounter != outgoingEdgesCounter)
+      return false;
+
+    // step 2
+
+    for(auto i = vertexes.begin(); i != vertexes.end(); ++i)
+    {
+      auto outgoingEdges = (*i)->getOutgoingEdges();
+
+      for(auto j = outgoingEdges.begin(); j != outgoingEdges.end(); ++j)
+      {
+        if((*j) == NULL)
+          return false;
+        auto dstVertex = (*j)->getDestenation();
+        if(std::find(vertexes.begin(), vertexes.end(), dstVertex) == vertexes.end())
+          return false;
+      }
+
+      auto incomingEdges = (*i)->getIncomingEdges();
+
+      for(auto j = incomingEdges.begin(); j != incomingEdges.end(); ++j)
+      {
+        if((*j) == NULL)
+          return false;
+        auto srcVertex = (*j)->getSource();
+        if(std::find(vertexes.begin(), vertexes.end(), srcVertex) == vertexes.end())
+          return false;
+      }
+    }
+
+    return true;
   }
 
   template<typename V, typename E> inline
