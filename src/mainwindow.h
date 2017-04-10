@@ -44,8 +44,10 @@ private slots:
 private:
   Ui::MainWindow *ui;
 
-  // Graph invariant check
-  bool checkGraphInvariant();
+  // fast invariant
+  bool checkFirstGraphInvariant();
+  // slower invariant
+  bool checkSecondGraphInvariant();
 
   // Main container
   mg::Multigraph<std::string, double> graph;

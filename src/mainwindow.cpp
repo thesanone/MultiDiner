@@ -43,7 +43,8 @@ MainWindow::MainWindow(QString graphPath, QWidget *parent) :
     inputFile.close();
   }
 
-  Q_ASSERT(graph.checkGraphInvariant());
+  Q_ASSERT(checkFirstGraphInvariant());
+  Q_ASSERT(checkSecondGraphInvariant());
 
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -208,14 +209,15 @@ void MainWindow::actionLoadGraph()
 
     inputFile.close();
 
-    /* // custom error
+    /*// custom error
     auto bad = graph.beginV();
     auto badPV = (*bad);
     auto badPEI = badPV->getIncomingEdges().begin();
     auto badPE = (*badPEI);
     badPV->delIncomingEdge(badPE);*/
 
-    Q_ASSERT(graph.checkGraphInvariant());
+    Q_ASSERT(checkFirstGraphInvariant());
+    Q_ASSERT(checkSecondGraphInvariant());
 
     updatePersonsList();
     updateGraph();
@@ -313,4 +315,52 @@ void MainWindow::writeSettings(QString file, QString group)
   settings.setValue("geometry", saveGeometry());
   settings.setValue("state", saveState());
   settings.endGroup();
+}
+
+bool MainWindow::checkFirstGraphInvariant()
+{
+  size_t incomingEdgesCounter = 0;
+  size_t outgoingEdgesCounter = 0;
+
+  for(auto i = graph.beginV(); i != graph.endV(); ++i)
+  {
+    if((*i) == NULL)
+      return false;
+    incomingEdgesCounter += (*i)->getIncomingEdges().size();
+    outgoingEdgesCounter += (*i)->getOutgoingEdges().size();
+  }
+
+  return incomingEdgesCounter == outgoingEdgesCounter;
+}
+
+bool MainWindow::checkSecondGraphInvariant()
+{
+  auto vertexes = graph.getVertexes();
+
+  for(auto i = vertexes.begin(); i != vertexes.end(); ++i)
+  {
+    auto outgoingEdges = (*i)->getOutgoingEdges();
+
+    for(auto j = outgoingEdges.begin(); j != outgoingEdges.end(); ++j)
+    {
+      if((*j) == NULL)
+        return false;
+      auto dstVertex = (*j)->getDestenation();
+      if(std::find(vertexes.begin(), vertexes.end(), dstVertex) == vertexes.end())
+        return false;
+    }
+
+    auto incomingEdges = (*i)->getIncomingEdges();
+
+    for(auto j = incomingEdges.begin(); j != incomingEdges.end(); ++j)
+    {
+      if((*j) == NULL)
+        return false;
+      auto srcVertex = (*j)->getSource();
+      if(std::find(vertexes.begin(), vertexes.end(), srcVertex) == vertexes.end())
+        return false;
+    }
+  }
+
+  return true;
 }
