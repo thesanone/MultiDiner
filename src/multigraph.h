@@ -19,22 +19,28 @@ namespace mg
   public:
     Multigraph() {}
 
+    // addition
     void addVertex(V value);
     void addEdge(V src, V dst, E value);
 
-    void clear();
-
-    void deleteVertex(V value);
+    // removal
     bool vertexIsIsolated(V value);
+    void deleteVertex(V value);
     void deleteEdge(V src, V dst, E value);
     void deleteEdge(Edge<V, E>* edge);
+    void clear();
 
+    /// Generates .dot file, and writes them them to @param name, to visualise graph with graphviz, at the given
     void generateDotText(std::string name);
-
-    std::list<Vertex<V, E> *> getVertexes() const;
 
     // invariant
     bool checkGraphInvariant();
+
+    template <typename V2, typename E2>
+    friend std::ostream& operator<< (std::ostream& os, const Multigraph<V2, E2>& dt);
+
+    template <typename V2, typename E2>
+    friend std::istream& operator>> (std::istream& is, Multigraph<V2, E2>& dt);
 
     class VertexIterator
     {
@@ -53,14 +59,10 @@ namespace mg
       typename std::list<Vertex<V, E>*>::iterator _vertexIterator;
     };
 
+    // access
     VertexIterator beginV() {return VertexIterator(0, &vertexes);}
     VertexIterator endV() {return VertexIterator(vertexes.size(), &vertexes);}
-
-    template <typename V2, typename E2>
-    friend std::ostream& operator<< (std::ostream& os, const Multigraph<V2, E2>& dt);
-
-    template <typename V2, typename E2>
-    friend std::istream& operator>> (std::istream& is, Multigraph<V2, E2>& dt);
+    std::list<Vertex<V, E> *> getVertexes() const;
 
   private:
     class Allocator
@@ -104,7 +106,7 @@ namespace mg
 
 
   // ********************************************************************************************
-  // *********************************** impelementatin *****************************************
+  // *********************************** implementation *****************************************
   // ********************************************************************************************
 
 
@@ -114,7 +116,7 @@ namespace mg
     if(!dt.edgePointer) return os;
 
     os << dt.edgePointer->getSource()->getData() << "\n"
-       << dt.edgePointer->getDestenation()->getData() << "\n"
+       << dt.edgePointer->getDestination()->getData() << "\n"
        << dt.edgePointer->getValue() << "\n";
     return os;
   }
@@ -173,7 +175,7 @@ namespace mg
      return is;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::addVertex(V value)
   {
     auto vertexPos = std::find_if(vertexes.begin(), vertexes.end(), [value](Vertex<V, E>* i)
@@ -195,7 +197,7 @@ namespace mg
 
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::addEdge(V src, V dst, E value)
   {
     if(src == dst)
@@ -242,14 +244,14 @@ namespace mg
       THROW_MG_EDGE_EXISTING_EXCEPTION("Edge wasn't added in dst incoming edges!", newEdge, V, E);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::clear()
   {
     vertexes.clear();
     alloc.returnAll();
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::deleteVertex(V value)
   {
     auto vertexPos = std::find_if(
@@ -273,14 +275,14 @@ namespace mg
                   [this](Edge<V, E>* i)
     {
       i->getSource()->delOutgoingEdge(i);
-      i->getDestenation()->delIncomingEdge(i);
+      i->getDestination()->delIncomingEdge(i);
       alloc.returnEdge(i);
     });
 
     std::for_each(vertexOutgoingEdges.begin(), vertexOutgoingEdges.end(),
                   [this](Edge<V, E>* i)
     {
-      i->getDestenation()->delIncomingEdge(i);
+      i->getDestination()->delIncomingEdge(i);
       i->getSource()->delOutgoingEdge(i);
       alloc.returnEdge(i);
     });
@@ -290,7 +292,7 @@ namespace mg
     alloc.returnVertex(vertexPointer);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   bool Multigraph<V, E>::vertexIsIsolated(V value)
   {
     auto vertexPos = std::find_if(
@@ -314,7 +316,7 @@ namespace mg
             vertexOutgoingEdges.empty());
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::deleteEdge(V src, V dst, E value)
   {
     auto srcPos = std::find_if(vertexes.begin(), vertexes.end(),
@@ -336,7 +338,7 @@ namespace mg
     auto edgePos = std::find_if(outgoingEdges.begin(), outgoingEdges.end(),
                                [dst, value](Edge<V, E>* i)
     {
-      return (i->getDestenation()->getData() == dst)
+      return (i->getDestination()->getData() == dst)
           && (i->getValue() == value);
     });
 
@@ -350,19 +352,19 @@ namespace mg
 
     // удаление дуги
     srcPointer->delOutgoingEdge(edgePointer);
-    edgePointer->getDestenation()->delIncomingEdge(edgePointer);
+    edgePointer->getDestination()->delIncomingEdge(edgePointer);
     alloc.returnEdge(edgePointer);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::deleteEdge(Edge<V, E> *edge)
   {
     edge->getSource()->delOutgoingEdge(edge);
-    edge->getDestenation()->delIncomingEdge(edge);
+    edge->getDestination()->delIncomingEdge(edge);
     alloc.returnEdge(edge);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::generateDotText(std::string name)
   {
     std::ofstream outputFile;
@@ -386,7 +388,7 @@ namespace mg
       {
         outputFile <<"\"" << j->getSource()->getData() <<"\""
                    << "->"
-                   <<"\"" << j->getDestenation()->getData() <<"\""
+                   <<"\"" << j->getDestination()->getData() <<"\""
                    << "[label=\""
                    << j->getValue()
                    << "\"];\n";
@@ -397,13 +399,13 @@ namespace mg
     outputFile.close();
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   std::list<Vertex<V, E> *> Multigraph<V, E>::getVertexes() const
   {
     return vertexes;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   bool Multigraph<V, E>::checkGraphInvariant()
   {
     // step 1
@@ -432,7 +434,7 @@ namespace mg
       {
         if((*j) == NULL)
           return false;
-        auto dstVertex = (*j)->getDestenation();
+        auto dstVertex = (*j)->getDestination();
         if(std::find(vertexes.begin(), vertexes.end(), dstVertex) == vertexes.end())
           return false;
       }
@@ -452,7 +454,7 @@ namespace mg
     return true;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Multigraph<V, E>::VertexIterator::VertexIterator(const Multigraph<V, E>::VertexIterator &iterator)
   {
     _vertexP = iterator._vertexP;
@@ -461,7 +463,7 @@ namespace mg
     for(size_t i = 0; i < _position; i++) _vertexIterator++;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Multigraph<V, E>::VertexIterator::VertexIterator(const size_t position, std::list<Vertex<V, E>*> *vertex)
   {
     _position = position;
@@ -483,7 +485,7 @@ namespace mg
     return *this;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   typename Multigraph<V, E>::VertexIterator &Multigraph<V, E>::VertexIterator::operator += (const size_t k)
   {
     if(_vertexP->size() < (_position + k))
@@ -496,19 +498,19 @@ namespace mg
     return *this;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   bool Multigraph<V, E>::VertexIterator::operator ==(const Multigraph<V, E>::VertexIterator &iterator)
   {
     return (_vertexIterator == iterator._vertexIterator);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   bool Multigraph<V, E>::VertexIterator::operator !=(const Multigraph<V, E>::VertexIterator &iterator)
   {
     return (_vertexIterator != iterator._vertexIterator);
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Vertex<V, E> *Multigraph<V, E>::VertexIterator::operator *()
   {
     if(_position == _vertexP->size())
@@ -519,13 +521,13 @@ namespace mg
     return *_vertexIterator;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Multigraph<V, E>::Allocator::~Allocator()
   {
     returnAll();
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Vertex<V, E> *Multigraph<V, E>::Allocator::getVertex(V& dt)
   {
     Vertex<V, E>* newVertex = new Vertex<V, E>(dt);
@@ -533,7 +535,7 @@ namespace mg
     return newVertex;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   Edge<V, E> *Multigraph<V, E>::Allocator::getEdge(Vertex<V, E>* src, Vertex<V, E>* dst, E value)
   {
     Edge<V, E>* newEdge = new Edge<V, E>(src, dst, value);
@@ -541,7 +543,7 @@ namespace mg
     return newEdge;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::Allocator::returnVertex(Vertex<V, E> *vertex)
   {
     auto pos = std::find(vertexes_pool.begin(), vertexes_pool.end(), vertex);
@@ -556,7 +558,7 @@ namespace mg
     delete vertex;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::Allocator::returnEdge(Edge<V, E> *edge)
   {
     auto pos = std::find(edges_pool.begin(), edges_pool.end(), edge);
@@ -571,7 +573,7 @@ namespace mg
     delete edge;
   }
 
-  template<typename V, typename E> inline
+  template<typename V, typename E>
   void Multigraph<V, E>::Allocator::returnAll()
   {
     std::for_each(vertexes_pool.begin(), vertexes_pool.end(),

@@ -22,12 +22,16 @@ public:
   ~MainWindow();
 
 private slots:
+
+  // buttons
   void addPerson();
   void addDebt();
   void deletePerson();
 
+  /// Updates the list of vertices of the graph in comboboxes
   void updatePersonsList();
 
+  /// Updates graph image
   void updateGraph();
 
   // actions
@@ -43,9 +47,6 @@ private slots:
 
 private:
   Ui::MainWindow *ui;
-
-  // Graph invariant check
-  bool checkGraphInvariant();
 
   // Main container
   mg::Multigraph<std::string, double> graph;

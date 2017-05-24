@@ -208,13 +208,6 @@ void MainWindow::actionLoadGraph()
 
     inputFile.close();
 
-    /* // custom error
-    auto bad = graph.beginV();
-    auto badPV = (*bad);
-    auto badPEI = badPV->getIncomingEdges().begin();
-    auto badPE = (*badPEI);
-    badPV->delIncomingEdge(badPE);*/
-
     Q_ASSERT(graph.checkGraphInvariant());
 
     updatePersonsList();
@@ -236,8 +229,8 @@ void MainWindow::actionReduseEdges()
       ++k;
       while(k!= outgoingEdges.end())
       {
-        if((*j)->getDestenation()->getData() ==
-           (*k)->getDestenation()->getData())
+        if((*j)->getDestination()->getData() ==
+           (*k)->getDestination()->getData())
         {
           double current = (*j)->getValue();
           (*j)->setValue(current + (*k)->getValue());
@@ -258,13 +251,13 @@ void MainWindow::actionReduseEdges()
     auto outgoingEdges = i->getOutgoingEdges();
     std::for_each(outgoingEdges.begin(), outgoingEdges.end(), [this](mg::Edge<std::string, double>* j)
     {
-      auto dst = j->getDestenation();
+      auto dst = j->getDestination();
       auto dstOutgoingEdges = dst->getOutgoingEdges();
       auto reverseEdgePos =
           std::find_if(dstOutgoingEdges.begin(), dstOutgoingEdges.end(),
                        [j](mg::Edge<std::string, double>* k)
       {
-        return j->getSource() == k->getDestenation();
+        return j->getSource() == k->getDestination();
       });
 
       if (reverseEdgePos != dstOutgoingEdges.end())

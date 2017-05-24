@@ -13,16 +13,12 @@ public:
   Edge() {}
   Edge(Vertex<V, E>* src, Vertex<V, E>* dst, E value):destenation(dst), source(src), value(value)
   {
-    /*this->source = src;
-    this->destenation = dst;
-    this->value = value;*/
+
   }
 
-  Vertex<V, E>* getDestenation() const {return destenation;}
-  //void setDestenation(const V &value) {destenation = value;}
+  Vertex<V, E>* getDestination() const {return destenation;}
 
   Vertex<V, E>* getSource() const {return source;}
-  //void setSource(const V &value) {source = value;}
 
   E getValue() const {return value;}
   void setValue(const E &value) {this->value = value;}
