@@ -47,7 +47,6 @@ private slots:
 
 private:
   Ui::MainWindow *ui;
-
   // Main container
   mg::Multigraph<std::string, double> graph;
 

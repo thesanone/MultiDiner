@@ -43,8 +43,6 @@ MainWindow::MainWindow(QString graphPath, QWidget *parent) :
     inputFile.close();
   }
 
-  Q_ASSERT(graph.checkGraphInvariant());
-
   view = new WheelEvent_forQSceneView(this);
   view->setDragMode(QGraphicsView::ScrollHandDrag);
   ui->horizontalLayout_central->addWidget(view);
